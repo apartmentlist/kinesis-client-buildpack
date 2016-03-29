@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+# bin/compile <build-dir> <cache-dir>
+
+require 'fileutils'
+require 'open-uri'
+
+MAVEN_URL = 'https://repo1.maven.org/maven2'
+BUILD_DIR = "#{ARGV[0]}/jars"
+CACHE_DIR = "#{ARGV[1]}/#{ENV['STACK']}"
+
+MAVEN_PACKAGES = [
+  #[group id,                     artifact id,             version,  MD5                               ],
+  ['com.amazonaws',               'amazon-kinesis-client', '1.2.0',  'b51edb2618e38124612e1d692527ff50'],
+  ['com.amazonaws',               'aws-java-sdk',          '1.7.13', '7b64c32d8b2d440f7703147ff929129e'],
+  ['commons-codec',               'commons-codec',         '1.3',    '8e149c1053741c03736a52df83974dcc'],
+  ['commons-logging',             'commons-logging',       '1.1.1',  'ed448347fc0104034aa14c8189bf37de'],
+  ['org.apache.httpcomponents',   'httpclient',            '4.2',    'c16abd2428d2abf95e0af53aaa775f1b'],
+  ['org.apache.httpcomponents',   'httpcore',              '4.2',    '6db815039bebb9c837960e7dca0e9001'],
+  ['com.fasterxml.jackson.core',  'jackson-annotations',   '2.1.1',  'fd343ff9c142457d8b79e3017412280f'],
+  ['com.fasterxml.jackson.core',  'jackson-core',          '2.1.1',  'dfb5f567fb10804e68b1694842f2f9af'],
+  ['com.fasterxml.jackson.core',  'jackson-databind',      '2.1.1',  'c085b3a79ecaedcbb35bb63ed6415517'],
+  ['joda-time',                   'joda-time',             '2.4',    '1231c3e09de6aa5d6b6d9982c0224e20']
+]
+
+def ensure_directory(path)
+  unless File.directory?(path)
+    FileUtils.mkdir_p(path)
+  end
+end
+
+def jar_name(_, artifact_id, version, _)
+  "#{artifact_id}-#{version}.jar"
+end
+
+def jar_url(group_id, artifact_id, version, md5)
+  group_path = group_id.gsub(/\./, '/')
+  jar_name = jar_name(group_id, artifact_id, version, md5)
+  "#{MAVEN_URL}/#{group_path}/#{artifact_id}/#{version}/#{jar_name}"
+end
+
+def download_maven_jar(group_id, artifact_id, version, md5)
+  jar_name = jar_name(group_id, artifact_id, version, md5)
+  jar_url = jar_url(group_id, artifact_id, version, md5)
+  cached_jar_file = File.join(CACHE_DIR, jar_name)
+  File.open(cached_jar_file, 'wb') do |saved_file|
+    open(jar_url, 'rb') do |read_file|
+      saved_file.write(read_file.read)
+    end
+  end
+end
+
+def download_jars_if_needed
+  MAVEN_PACKAGES.each do |jar|
+    jar_name = jar_name(*jar)
+    cached_jar_file = File.join(CACHE_DIR, jar_name)
+    if !File.exist?(cached_jar_file)
+      puts("Downloading '#{cached_jar_file}' from Maven...")
+      download_maven_jar(*jar)
+      # TODO: Validate md5sums after download
+    end
+  end
+end
+
+def copy_jars_to_app
+  MAVEN_PACKAGES.each do |jar|
+    jar_name = jar_name(*jar)
+    cached_jar_file = File.join(CACHE_DIR, jar_name)
+    app_jar_file = File.join(BUILD_DIR, jar_name)
+    puts("Copying '#{jar_name}'...")
+    FileUtils.cp(cached_jar_file, app_jar_file)
+  end
+end
+
+ensure_directory(BUILD_DIR)
+ensure_directory(CACHE_DIR)
+download_jars_if_needed
+copy_jars_to_app
