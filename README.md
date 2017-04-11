@@ -7,13 +7,13 @@ pulls in JAR files used to make use the Amazon [Kinesis Client Library][0].
 
 ## Compatability
 
-This buildpack is compatible with [version 1.0.0 of the `aws-kclrb` gem][1].  Be sure to pin your gem version accordingly:
+This buildpack is compatible with [version 1.0.1 of the `aws-kclrb` gem][1].  Be sure to pin your gem version accordingly:
 
 ```
-gem 'aws-kclrb', '= 1.0.0'
+gem 'aws-kclrb', '= 1.0.1'
 ```
 
-[1]: https://rubygems.org/gems/aws-kclrb/versions/1.0.0
+[1]: https://rubygems.org/gems/aws-kclrb/versions/1.0.1
 
 In general, this buildpack will be versioned in parallel with `aws-kclrb` so version numbers should match to guarantee compatability.
 
@@ -21,12 +21,12 @@ In general, this buildpack will be versioned in parallel with `aws-kclrb` so ver
 
 Since the JAR files in the buildpack have to correspond with the gem version, you probably want to pin buildpack versions you want to use when adding the buildpack:
 
-    $ heroku buildpacks:set https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.0
+    $ heroku buildpacks:set https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.1
 
     $ heroku buildpacks -a my-ruby-app
     === my-ruby-app Buildpack URLs
     1. heroku/ruby
-    2. https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.0
+    2. https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.1
 
 ## Details
 
@@ -46,12 +46,13 @@ The jar list is the most interesting part of this buildpack.  The list was gener
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
-      <version>1.6.2</version>
+      <version>1.7.5</version>
     </dependency>
   </dependencies>
 </project>
-
 ```
+
+You can find the latest version of the `amazon-kinesis-client` in its [Maven repository listing][2].
 
 Once a new project is created with this file, the dependencies can be
 downloaded to a directory.  From the project root, one can simply:
@@ -61,14 +62,51 @@ mkdir jars
 mvn dependency:copy-dependencies -DoutputDirectory=jars
 ```
 
-These files can then be processed by `md5sum` to obtain the MD5 hashes.
-
 The group ID, artifact ID and versions for each can be extracted using `mvn`:
 
 ```
 mvn dependency:list
 ```
 
-Which can then be split on the `:` delimiter and spliced into the
+The result shows all dependencies and their versions:
+
+```
+com.amazonaws:aws-java-sdk-cloudwatch:jar:1.11.115:compile
+com.amazonaws:jmespath-java:jar:1.11.115:compile
+com.amazonaws:aws-java-sdk-s3:jar:1.11.115:compile
+commons-codec:commons-codec:jar:1.9:compile
+com.fasterxml.jackson.core:jackson-databind:jar:2.6.6:compile
+com.google.guava:guava:jar:18.0:compile
+joda-time:joda-time:jar:2.8.1:compile
+com.amazonaws:aws-java-sdk-kinesis:jar:1.11.115:compile
+commons-lang:commons-lang:jar:2.6:compile
+commons-logging:commons-logging:jar:1.1.3:compile
+com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.6:compile
+com.amazonaws:aws-java-sdk-core:jar:1.11.115:compile
+com.fasterxml.jackson.core:jackson-core:jar:2.6.6:compile
+software.amazon.ion:ion-java:jar:1.0.2:compile
+com.amazonaws:aws-java-sdk-kms:jar:1.11.115:compile
+com.amazonaws:aws-java-sdk-dynamodb:jar:1.11.115:compile
+com.amazonaws:amazon-kinesis-client:jar:1.7.5:compile
+org.apache.httpcomponents:httpclient:jar:4.5.2:compile
+org.apache.httpcomponents:httpcore:jar:4.4.4:compile
+com.fasterxml.jackson.core:jackson-annotations:jar:2.6.0:compile
+com.google.protobuf:protobuf-java:jar:2.6.1:compile
+```
+
+This listing can then be split on the `:` delimiter and spliced into the
 results of the MD5 output to generate the artifact list used by the
 buildpack.
+
+[2]: https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client
+
+## Testing
+
+If you want to modify the buildpack (probably the `compile` file) and test it, you can run it on a development machine:
+
+```
+cd bin
+STACK=cache ./compile . .
+```
+
+This will produce two directories `cache` and `jars` that contain the JARs.  You can remove them when you're finished testing.
