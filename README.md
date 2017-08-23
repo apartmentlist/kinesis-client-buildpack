@@ -15,7 +15,7 @@ gem 'aws-kclrb', '= 1.0.1'
 
 [1]: https://rubygems.org/gems/aws-kclrb/versions/1.0.1
 
-In general, this buildpack will be versioned in parallel with `aws-kclrb` so version numbers should match to guarantee compatability.
+In general, this buildpack will be versioned in parallel with `aws-kclrb` so version numbers should match to guarantee compatibility.
 
 ## Usage
 
@@ -46,7 +46,7 @@ The jar list is the most interesting part of this buildpack.  The list was gener
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
-      <version>1.7.5</version>
+      <version>1.8.1</version>
     </dependency>
   </dependencies>
 </project>
@@ -71,32 +71,30 @@ mvn dependency:list
 The result shows all dependencies and their versions:
 
 ```
-com.amazonaws:aws-java-sdk-cloudwatch:jar:1.11.115:compile
-com.amazonaws:jmespath-java:jar:1.11.115:compile
-com.amazonaws:aws-java-sdk-s3:jar:1.11.115:compile
+com.amazonaws:aws-java-sdk-kinesis:jar:1.11.171:compile
+com.fasterxml.jackson.core:jackson-databind:jar:2.6.7.1:compile
+com.amazonaws:aws-java-sdk-kms:jar:1.11.171:compile
+com.fasterxml.jackson.core:jackson-core:jar:2.6.7:compile
+com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.7:compile
 commons-codec:commons-codec:jar:1.9:compile
-com.fasterxml.jackson.core:jackson-databind:jar:2.6.6:compile
+com.amazonaws:aws-java-sdk-cloudwatch:jar:1.11.171:compile
+com.amazonaws:amazon-kinesis-client:jar:1.8.1:compile
+com.amazonaws:aws-java-sdk-dynamodb:jar:1.11.171:compile
 com.google.guava:guava:jar:18.0:compile
 joda-time:joda-time:jar:2.8.1:compile
-com.amazonaws:aws-java-sdk-kinesis:jar:1.11.115:compile
 commons-lang:commons-lang:jar:2.6:compile
 commons-logging:commons-logging:jar:1.1.3:compile
-com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.6:compile
-com.amazonaws:aws-java-sdk-core:jar:1.11.115:compile
-com.fasterxml.jackson.core:jackson-core:jar:2.6.6:compile
 software.amazon.ion:ion-java:jar:1.0.2:compile
-com.amazonaws:aws-java-sdk-kms:jar:1.11.115:compile
-com.amazonaws:aws-java-sdk-dynamodb:jar:1.11.115:compile
-com.amazonaws:amazon-kinesis-client:jar:1.7.5:compile
+com.amazonaws:aws-java-sdk-s3:jar:1.11.171:compile
+com.amazonaws:aws-java-sdk-core:jar:1.11.171:compile
 org.apache.httpcomponents:httpclient:jar:4.5.2:compile
 org.apache.httpcomponents:httpcore:jar:4.4.4:compile
 com.fasterxml.jackson.core:jackson-annotations:jar:2.6.0:compile
+com.amazonaws:jmespath-java:jar:1.11.171:compile
 com.google.protobuf:protobuf-java:jar:2.6.1:compile
 ```
 
-This listing can then be split on the `:` delimiter and spliced into the
-results of the MD5 output to generate the artifact list used by the
-buildpack.
+This listing can then be split out to update the list of jars and versions that should be downloaded in the `compile` script.
 
 [2]: https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client
 
