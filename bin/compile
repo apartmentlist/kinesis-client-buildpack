@@ -5,6 +5,7 @@ require 'fileutils'
 require 'open-uri'
 
 MAVEN_URL = 'https://repo1.maven.org/maven2'
+JDK_DIR = ARGV[0]
 BUILD_DIR = "#{ARGV[0]}/jars"
 CACHE_DIR = "#{ARGV[1]}/#{ENV['STACK']}"
 
@@ -32,6 +33,16 @@ MAVEN_PACKAGES = [
   ['org.apache.httpcomponents',         'httpcore',                 '4.4.4'],
   ['software.amazon.ion',               'ion-java',                 '1.0.2'],
 ]
+
+def install_java(jdk_dir)
+  script_dir = File.dirname(__FILE__)
+  script = File.join(File.expand_path(script_dir), 'install_java')
+  result = %x(#{script} #{jdk_dir})
+  unless $? == 0
+    puts("Error while installing Java:\n#{result}")
+    fail("Failed to install Java...exiting")
+  end
+end
 
 def ensure_directory(path)
   unless File.directory?(path)
@@ -81,6 +92,7 @@ def copy_jars_to_app
   end
 end
 
+install_java(JDK_DIR)
 ensure_directory(BUILD_DIR)
 ensure_directory(CACHE_DIR)
 download_jars_if_needed

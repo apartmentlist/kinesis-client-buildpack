@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Based upon example code in the readme for the JVM buildpack:
+#  https://github.com/heroku/heroku-buildpack-jvm-common#usage-from-a-buildpack
+
+BUILD_DIR=$1
+
+JVM_COMMON_BUILDPACK=${JVM_COMMON_BUILDPACK:-https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/jvm-common.tgz}
+mkdir -p /tmp/jvm-common
+curl --silent --location $JVM_COMMON_BUILDPACK | tar xzm -C /tmp/jvm-common --strip-components=1
+. /tmp/jvm-common/bin/util
+. /tmp/jvm-common/bin/java
+
+# install JDK
+javaVersion=$(detect_java_version ${BUILD_DIR})
+
+install_java ${BUILD_DIR} ${javaVersion}

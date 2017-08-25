@@ -1,19 +1,20 @@
 ## `kinesis-client-buildpack` for Heroku
 
-This is a [Heroku buildpack](http://devcenter.heroku.com/articles/buildpacks) that
-pulls in JAR files used to make use the Amazon [Kinesis Client Library][0].
+This is a [Heroku buildpack][0] that pulls in JAR files used to make use the Amazon [Kinesis Client Library][1].  Since Java 8 is required to make use of those JAR files, this buildpack is built atop the official [Heroku JVM buildpack][2].
 
-[0]: http://docs.aws.amazon.com/kinesis/latest/dev/developing-consumers-with-kcl.html
+[0]: http://devcenter.heroku.com/articles/buildpacks
+[1]: http://docs.aws.amazon.com/kinesis/latest/dev/developing-consumers-with-kcl.html
+[2]: https://github.com/heroku/heroku-buildpack-jvm-common
 
 ## Compatability
 
-This buildpack is compatible with [version 1.0.1 of the `aws-kclrb` gem][1].  Be sure to pin your gem version accordingly:
+This buildpack is compatible with [version 1.0.1 of the `aws-kclrb` gem][3].  Be sure to pin your gem version accordingly:
 
 ```
 gem 'aws-kclrb', '= 1.0.1'
 ```
 
-[1]: https://rubygems.org/gems/aws-kclrb/versions/1.0.1
+[3]: https://rubygems.org/gems/aws-kclrb/versions/1.0.1
 
 In general, this buildpack will be versioned in parallel with `aws-kclrb` so version numbers should match to guarantee compatibility.
 
@@ -21,12 +22,12 @@ In general, this buildpack will be versioned in parallel with `aws-kclrb` so ver
 
 Since the JAR files in the buildpack have to correspond with the gem version, you probably want to pin buildpack versions you want to use when adding the buildpack:
 
-    $ heroku buildpacks:set https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.1
+    $ heroku buildpacks:set https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.1.2
 
     $ heroku buildpacks -a my-ruby-app
     === my-ruby-app Buildpack URLs
     1. heroku/ruby
-    2. https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.1
+    2. https://github.com/apartmentlist/kinesis-client-buildpack.git#v1.0.1.2
 
 ## Details
 
@@ -52,7 +53,9 @@ The jar list is the most interesting part of this buildpack.  The list was gener
 </project>
 ```
 
-You can find the latest version of the `amazon-kinesis-client` in its [Maven repository listing][2].
+You can find the latest version of the `amazon-kinesis-client` in its [Maven repository listing][4].
+
+[4]: https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client
 
 Once a new project is created with this file, the dependencies can be
 downloaded to a directory.  From the project root, one can simply:
@@ -96,15 +99,13 @@ com.google.protobuf:protobuf-java:jar:2.6.1:compile
 
 This listing can then be split out to update the list of jars and versions that should be downloaded in the `compile` script.
 
-[2]: https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client
-
 ## Testing
 
 If you want to modify the buildpack (probably the `compile` file) and test it, you can run it on a development machine:
 
 ```
-cd bin
-STACK=cache ./compile . .
+mkdir tmp
+STACK=heroku-16 ./bin/compile tmp tmp
 ```
 
 This will produce two directories `cache` and `jars` that contain the JARs.  You can remove them when you're finished testing.
